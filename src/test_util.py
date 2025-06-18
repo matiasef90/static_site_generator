@@ -1,4 +1,4 @@
-from util import split_nodes_delimiter
+from util import split_nodes_delimiter, extract_markdown_links, extract_markdown_images
 from textnode import TextNode, TextType
 import unittest
 
@@ -38,5 +38,14 @@ class TestParentNode(unittest.TestCase):
         ]
         self.assertEqual(test, spected)
 
+    def test_extract_markdown_images(self):
+        matches = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
 
-
+    def test_extract_markdown_links(self):
+        matches = extract_markdown_links(
+            "This is text with a link [to boot dev](https://www.boot.dev)"
+        )
+        self.assertListEqual([("to boot dev", "https://www.boot.dev")], matches)
