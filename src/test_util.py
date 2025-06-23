@@ -1,4 +1,4 @@
-from util import split_nodes_delimiter, extract_markdown_links, extract_markdown_images
+from util import *
 from textnode import TextNode, TextType
 import unittest
 
@@ -49,3 +49,86 @@ class TestParentNode(unittest.TestCase):
             "This is text with a link [to boot dev](https://www.boot.dev)"
         )
         self.assertListEqual([("to boot dev", "https://www.boot.dev")], matches)
+
+    def test_split_nodes_link_one(self):
+        output = split_nodes_link([TextNode(
+            "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)",
+             TextType.TEXT
+        )])
+        expect_output = [
+            TextNode("This is text with a link ", TextType.TEXT),
+            TextNode("to boot dev", TextType.LINK, "https://www.boot.dev"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("to youtube", TextType.LINK, "https://www.youtube.com/@bootdotdev"),
+        ]
+        self.assertListEqual(output, expect_output)
+    
+    def test_split_nodes_link_two(self):
+        output = split_nodes_link([TextNode(
+            "[to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)",
+             TextType.TEXT
+        )])
+        expect_output = [
+            TextNode("to boot dev", TextType.LINK, "https://www.boot.dev"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("to youtube", TextType.LINK, "https://www.youtube.com/@bootdotdev"),
+        ]
+        self.assertListEqual(output, expect_output)
+
+    def test_split_nodes_link_three(self):
+        output = split_nodes_link([
+            TextNode("hola [ms1](url1) world", TextType.TEXT),
+            TextNode("[ms2](url2) world", TextType.TEXT),
+            TextNode("hola [ms3](url3)", TextType.TEXT),
+        ])
+        expect_output = [
+            TextNode("hola ", TextType.TEXT),
+            TextNode("ms1", TextType.LINK, "url1"),
+            TextNode(" world", TextType.TEXT),
+            TextNode("ms2", TextType.LINK, "url2"),
+            TextNode(" world", TextType.TEXT),
+            TextNode("hola ", TextType.TEXT),
+            TextNode("ms3", TextType.LINK, "url3"),
+        ]
+        self.assertListEqual(output, expect_output)
+    def test_split_nodes_image_one(self):
+        output = split_nodes_images([TextNode(
+            "This is text with a link ![to boot dev](https://www.boot.dev) and ![to youtube](https://www.youtube.com/@bootdotdev)",
+             TextType.TEXT
+        )])
+        expect_output = [
+            TextNode("This is text with a link ", TextType.TEXT),
+            TextNode("to boot dev", TextType.IMAGE, "https://www.boot.dev"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("to youtube", TextType.IMAGE, "https://www.youtube.com/@bootdotdev"),
+        ]
+        self.assertListEqual(output, expect_output)
+    
+    def test_split_nodes_image_two(self):
+        output = split_nodes_images([TextNode(
+            "![to boot dev](https://www.boot.dev) and ![to youtube](https://www.youtube.com/@bootdotdev)",
+             TextType.TEXT
+        )])
+        expect_output = [
+            TextNode("to boot dev", TextType.IMAGE, "https://www.boot.dev"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("to youtube", TextType.IMAGE, "https://www.youtube.com/@bootdotdev"),
+        ]
+        self.assertListEqual(output, expect_output)
+
+    def test_split_nodes_image_three(self):
+        output = split_nodes_images([
+            TextNode("hola ![ms1](url1) world", TextType.TEXT),
+            TextNode("![ms2](url2) world", TextType.TEXT),
+            TextNode("hola ![ms3](url3)", TextType.TEXT),
+        ])
+        expect_output = [
+            TextNode("hola ", TextType.TEXT),
+            TextNode("ms1", TextType.IMAGE, "url1"),
+            TextNode(" world", TextType.TEXT),
+            TextNode("ms2", TextType.IMAGE, "url2"),
+            TextNode(" world", TextType.TEXT),
+            TextNode("hola ", TextType.TEXT),
+            TextNode("ms3", TextType.IMAGE, "url3"),
+        ]
+        self.assertListEqual(output, expect_output)
