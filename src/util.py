@@ -29,10 +29,13 @@ def extract_markdown_links(text):
 def split_nodes_link(nodes):
     new_nodes = []
     for node in nodes:
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)
+            continue
         text = node.text
         links = extract_markdown_links(text)
-        text = re.sub(r"\[(.*?)\]\((.*?)\)", "_link_", text)
-        text = text.split("_")
+        text = re.sub(r"\[(.*?)\]\((.*?)\)", "#link#", text)
+        text = text.split("#")
         index_link = 0
         for sub_text in text:
             if sub_text == "":
@@ -48,10 +51,13 @@ def split_nodes_link(nodes):
 def split_nodes_images(nodes):
     new_nodes = []
     for node in nodes:
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)
+            continue
         text = node.text
         images = extract_markdown_images(text)
-        text = re.sub(r"\!\[(.*?)\]\((.*?)\)", "_images_", text)
-        text = text.split("_")
+        text = re.sub(r"\!\[(.*?)\]\((.*?)\)", "#images#", text)
+        text = text.split("#")
         index_images = 0
         for sub_text in text:
             if sub_text == "":
@@ -63,4 +69,12 @@ def split_nodes_images(nodes):
                 continue
             new_nodes.append(TextNode(sub_text, TextType.TEXT))
     return new_nodes
-    
+
+def text_to_node(text):
+    text_node = [TextNode(text, TextType.TEXT)]
+    text_node = split_nodes_images(text_node)
+    text_node = split_nodes_link(text_node)
+    text_node = split_nodes_delimiter(text_node, "**", TextType.BOLD)
+    text_node = split_nodes_delimiter(text_node, "_", TextType.ITALIC)
+    text_node = split_nodes_delimiter(text_node, "`", TextType.CODE)
+    return text_node
